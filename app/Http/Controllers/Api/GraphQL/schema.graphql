@@ -1,0 +1,448 @@
+type Query {
+    # Certificate Queries
+    certificate(id: ID!): Certificate
+    certificates(
+        filter: CertificateFilter
+        sort: [CertificateSort!]
+        page: PageInput
+    ): CertificateConnection!
+
+    # Template Queries
+    template(id: ID!): Template
+    templates(
+        filter: TemplateFilter
+        sort: [TemplateSort!]
+        page: PageInput
+    ): TemplateConnection!
+
+    # User Queries
+    user(id: ID!): User
+    users(
+        filter: UserFilter
+        sort: [UserSort!]
+        page: PageInput
+    ): UserConnection!
+
+    # Webhook Queries
+    webhook(id: ID!): Webhook
+    webhooks(
+        filter: WebhookFilter
+        sort: [WebhookSort!]
+        page: PageInput
+    ): WebhookConnection!
+}
+
+type Mutation {
+    # Certificate Mutations
+    createCertificate(input: CreateCertificateInput!): CreateCertificatePayload!
+    updateCertificate(input: UpdateCertificateInput!): UpdateCertificatePayload!
+    deleteCertificate(id: ID!): DeleteCertificatePayload!
+    revokeCertificate(input: RevokeCertificateInput!): RevokeCertificatePayload!
+    renewCertificate(id: ID!): RenewCertificatePayload!
+    bulkCreateCertificates(input: BulkCreateCertificatesInput!): BulkCreateCertificatesPayload!
+
+    # Template Mutations
+    createTemplate(input: CreateTemplateInput!): CreateTemplatePayload!
+    updateTemplate(input: UpdateTemplateInput!): UpdateTemplatePayload!
+    deleteTemplate(id: ID!): DeleteTemplatePayload!
+    duplicateTemplate(id: ID!): DuplicateTemplatePayload!
+
+    # Webhook Mutations
+    createWebhook(input: CreateWebhookInput!): CreateWebhookPayload!
+    updateWebhook(input: UpdateWebhookInput!): UpdateWebhookPayload!
+    deleteWebhook(id: ID!): DeleteWebhookPayload!
+    verifyWebhook(id: ID!): VerifyWebhookPayload!
+}
+
+type Subscription {
+    # Certificate Subscriptions
+    certificateCreated: Certificate!
+    certificateUpdated: Certificate!
+    certificateDeleted: ID!
+    certificateRevoked: Certificate!
+    certificateRenewed: Certificate!
+
+    # Bulk Operation Subscriptions
+    bulkOperationProgress(operationId: ID!): BulkOperationProgress!
+}
+
+# Certificate Types
+type Certificate {
+    id: ID!
+    certificateNumber: String!
+    templateId: ID!
+    template: Template!
+    recipientName: String!
+    recipientEmail: String
+    customFields: JSONObject
+    status: CertificateStatus!
+    issuedAt: DateTime!
+    expiresAt: DateTime
+    revokedAt: DateTime
+    revokedReason: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    metadata: JSONObject
+}
+
+type CertificateConnection {
+    edges: [CertificateEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type CertificateEdge {
+    node: Certificate!
+    cursor: String!
+}
+
+# Template Types
+type Template {
+    id: ID!
+    name: String!
+    description: String
+    content: String!
+    orientation: Orientation!
+    paperSize: PaperSize!
+    customFields: [CustomField!]!
+    isActive: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    metadata: JSONObject
+}
+
+type TemplateConnection {
+    edges: [TemplateEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type TemplateEdge {
+    node: Template!
+    cursor: String!
+}
+
+# User Types
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    isActive: Boolean!
+    roles: [Role!]!
+    permissions: [Permission!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type UserConnection {
+    edges: [UserEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type UserEdge {
+    node: User!
+    cursor: String!
+}
+
+# Webhook Types
+type Webhook {
+    id: ID!
+    url: String!
+    description: String
+    events: [WebhookEvent!]!
+    isActive: Boolean!
+    secret: String!
+    verificationStatus: Boolean
+    lastVerifiedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    deliveryStats: WebhookDeliveryStats!
+}
+
+type WebhookConnection {
+    edges: [WebhookEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type WebhookEdge {
+    node: Webhook!
+    cursor: String!
+}
+
+type WebhookDeliveryStats {
+    totalDeliveries: Int!
+    successfulDeliveries: Int!
+    failedDeliveries: Int!
+    lastDeliveryAt: DateTime
+    lastSuccessAt: DateTime
+    lastFailureAt: DateTime
+}
+
+# Common Types
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
+}
+
+type BulkOperationProgress {
+    operationId: ID!
+    status: BulkOperationStatus!
+    progress: Float!
+    processedItems: Int!
+    totalItems: Int!
+    errors: [BulkOperationError!]
+    completedAt: DateTime
+}
+
+type BulkOperationError {
+    row: Int
+    message: String!
+}
+
+# Input Types
+input PageInput {
+    first: Int
+    after: String
+    last: Int
+    before: String
+}
+
+input CreateCertificateInput {
+    templateId: ID!
+    recipientName: String!
+    recipientEmail: String
+    customFields: JSONObject
+    expiresAt: DateTime
+    metadata: JSONObject
+}
+
+input UpdateCertificateInput {
+    id: ID!
+    recipientName: String
+    recipientEmail: String
+    customFields: JSONObject
+    expiresAt: DateTime
+    metadata: JSONObject
+}
+
+input RevokeCertificateInput {
+    id: ID!
+    reason: String!
+}
+
+input BulkCreateCertificatesInput {
+    templateId: ID!
+    certificates: [BulkCertificateInput!]!
+}
+
+input BulkCertificateInput {
+    recipientName: String!
+    recipientEmail: String
+    customFields: JSONObject
+    expiresAt: DateTime
+    metadata: JSONObject
+}
+
+input CreateTemplateInput {
+    name: String!
+    description: String
+    content: String!
+    orientation: Orientation!
+    paperSize: PaperSize!
+    customFields: [CustomFieldInput!]!
+    isActive: Boolean
+    metadata: JSONObject
+}
+
+input UpdateTemplateInput {
+    id: ID!
+    name: String
+    description: String
+    content: String
+    orientation: Orientation
+    paperSize: PaperSize
+    customFields: [CustomFieldInput!]
+    isActive: Boolean
+    metadata: JSONObject
+}
+
+input CustomFieldInput {
+    name: String!
+    label: String!
+    type: CustomFieldType!
+    required: Boolean!
+    options: [String!]
+    defaultValue: String
+}
+
+input CreateWebhookInput {
+    url: String!
+    description: String
+    events: [WebhookEvent!]!
+    secret: String
+    isActive: Boolean
+}
+
+input UpdateWebhookInput {
+    id: ID!
+    url: String
+    description: String
+    events: [WebhookEvent!]
+    secret: String
+    isActive: Boolean
+}
+
+# Filter Inputs
+input CertificateFilter {
+    search: String
+    status: [CertificateStatus!]
+    templateId: [ID!]
+    issuedAfter: DateTime
+    issuedBefore: DateTime
+    expiresAfter: DateTime
+    expiresBefore: DateTime
+}
+
+input TemplateFilter {
+    search: String
+    isActive: Boolean
+}
+
+input UserFilter {
+    search: String
+    isActive: Boolean
+    roles: [Role!]
+}
+
+input WebhookFilter {
+    search: String
+    isActive: Boolean
+    events: [WebhookEvent!]
+}
+
+# Sort Inputs
+input CertificateSort {
+    field: CertificateSortField!
+    direction: SortDirection!
+}
+
+input TemplateSort {
+    field: TemplateSortField!
+    direction: SortDirection!
+}
+
+input UserSort {
+    field: UserSortField!
+    direction: SortDirection!
+}
+
+input WebhookSort {
+    field: WebhookSortField!
+    direction: SortDirection!
+}
+
+# Enums
+enum CertificateStatus {
+    ACTIVE
+    EXPIRED
+    REVOKED
+}
+
+enum Orientation {
+    PORTRAIT
+    LANDSCAPE
+}
+
+enum PaperSize {
+    A4
+    LETTER
+    LEGAL
+}
+
+enum CustomFieldType {
+    TEXT
+    NUMBER
+    DATE
+    SELECT
+    MULTISELECT
+}
+
+enum WebhookEvent {
+    CERTIFICATE_CREATED
+    CERTIFICATE_UPDATED
+    CERTIFICATE_DELETED
+    CERTIFICATE_EXPIRED
+    CERTIFICATE_REVOKED
+    CERTIFICATE_RENEWED
+    TEMPLATE_CREATED
+    TEMPLATE_UPDATED
+    TEMPLATE_DELETED
+    BULK_OPERATION_STARTED
+    BULK_OPERATION_COMPLETED
+    BULK_OPERATION_FAILED
+}
+
+enum BulkOperationStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+}
+
+enum Role {
+    ADMIN
+    MANAGER
+    USER
+}
+
+enum Permission {
+    CREATE_CERTIFICATE
+    UPDATE_CERTIFICATE
+    DELETE_CERTIFICATE
+    REVOKE_CERTIFICATE
+    CREATE_TEMPLATE
+    UPDATE_TEMPLATE
+    DELETE_TEMPLATE
+    MANAGE_WEBHOOKS
+    MANAGE_USERS
+}
+
+enum CertificateSortField {
+    CREATED_AT
+    UPDATED_AT
+    ISSUED_AT
+    EXPIRES_AT
+    RECIPIENT_NAME
+}
+
+enum TemplateSortField {
+    CREATED_AT
+    UPDATED_AT
+    NAME
+}
+
+enum UserSortField {
+    CREATED_AT
+    UPDATED_AT
+    NAME
+    EMAIL
+}
+
+enum WebhookSortField {
+    CREATED_AT
+    UPDATED_AT
+    URL
+}
+
+enum SortDirection {
+    ASC
+    DESC
+}
+
+# Scalars
+scalar DateTime
+scalar JSONObject

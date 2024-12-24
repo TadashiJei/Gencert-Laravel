@@ -1,0 +1,129 @@
+type DashboardMetrics {
+    certificates: CertificateMetrics!
+    users: UserMetrics!
+    activities: ActivityMetrics!
+    trends: TrendMetrics!
+}
+
+type CertificateMetrics {
+    total: Int!
+    active: Int!
+    expired: Int!
+    revoked: Int!
+    byTemplate: [TemplateMetric!]!
+    expiringSoon: Int!
+}
+
+type UserMetrics {
+    totalUsers: Int!
+    activeUsers: Int!
+    userRoles: [RoleMetric!]!
+    topUsers: [UserMetric!]!
+}
+
+type ActivityMetrics {
+    totalActivities: Int!
+    byType: [ActivityTypeMetric!]!
+    byUser: [UserActivityMetric!]!
+    recent: [UserActivity!]!
+}
+
+type TrendMetrics {
+    certificatesTrend: [DateMetric!]!
+    userActivityTrend: [DateMetric!]!
+}
+
+type TemplateMetric {
+    template: CertificateTemplate!
+    count: Int!
+}
+
+type RoleMetric {
+    role: String!
+    count: Int!
+}
+
+type UserMetric {
+    user: User!
+    count: Int!
+}
+
+type ActivityTypeMetric {
+    type: String!
+    count: Int!
+}
+
+type UserActivityMetric {
+    user: User!
+    count: Int!
+}
+
+type DateMetric {
+    date: Date!
+    count: Int!
+}
+
+type Report {
+    id: ID!
+    name: String!
+    type: String!
+    config: JSON!
+    data: JSON
+    schedule: JSON
+    nextRun: DateTime
+    lastRun: DateTime
+    creator: User!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type ChartData {
+    type: String!
+    data: JSON!
+    options: JSON!
+}
+
+input DateRangeInput {
+    startDate: DateTime!
+    endDate: DateTime!
+}
+
+input ReportConfigInput {
+    name: String!
+    type: String!
+    metrics: [String!]!
+    startDate: DateTime!
+    endDate: DateTime!
+    filters: JSON
+}
+
+input ReportScheduleInput {
+    frequency: String!
+    day: Int
+    hour: Int
+    minute: Int
+}
+
+extend type Query {
+    dashboardMetrics(dateRange: DateRangeInput): DashboardMetrics!
+    certificateStats(dateRange: DateRangeInput): CertificateMetrics!
+    userEngagementMetrics(dateRange: DateRangeInput): UserMetrics!
+    activityStats(dateRange: DateRangeInput): ActivityMetrics!
+    reports: [Report!]!
+    report(id: ID!): Report
+    certificateTrendsChart(dateRange: DateRangeInput!): ChartData!
+    userActivityHeatmap(dateRange: DateRangeInput!): ChartData!
+    certificateDistributionChart: ChartData!
+    userActivityChart(dateRange: DateRangeInput!): ChartData!
+    templateUsageChart: ChartData!
+    expiryForecastChart: ChartData!
+    realTimeStats: JSON!
+    performanceMetrics(dateRange: DateRangeInput): JSON!
+}
+
+extend type Mutation {
+    generateReport(config: ReportConfigInput!): Report!
+    scheduleReport(id: ID!, schedule: ReportScheduleInput!): Report!
+    deleteReport(id: ID!): Boolean!
+    exportReport(id: ID!, format: String!): String!
+}

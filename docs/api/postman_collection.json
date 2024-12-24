@@ -1,0 +1,188 @@
+{
+  "info": {
+    "name": "CertificateHub Analytics API",
+    "description": "Collection for CertificateHub Analytics & Reporting API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dashboard Metrics",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query DashboardMetrics($dateRange: DateRangeInput) {\n  dashboardMetrics(dateRange: $dateRange) {\n    certificates {\n      total\n      active\n      expired\n      revoked\n      expiringSoon\n    }\n    users {\n      totalUsers\n      activeUsers\n    }\n    activities {\n      totalActivities\n    }\n  }\n}",
+            "variables": {
+              "dateRange": {
+                "startDate": "2024-01-01T00:00:00Z",
+                "endDate": "2024-12-31T23:59:59Z"
+              }
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        }
+      }
+    },
+    {
+      "name": "Certificate Trends Chart",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query CertificateTrends($dateRange: DateRangeInput!) {\n  certificateTrendsChart(dateRange: $dateRange) {\n    type\n    data\n    options\n  }\n}",
+            "variables": {
+              "dateRange": {
+                "startDate": "2024-01-01T00:00:00Z",
+                "endDate": "2024-12-31T23:59:59Z"
+              }
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        }
+      }
+    },
+    {
+      "name": "Generate Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation GenerateReport($config: ReportConfigInput!) {\n  generateReport(config: $config) {\n    id\n    name\n    type\n    config\n    data\n  }\n}",
+            "variables": {
+              "config": {
+                "name": "Monthly Certificate Analysis",
+                "type": "certificate_metrics",
+                "metrics": ["certificates", "users", "activities"],
+                "startDate": "2024-01-01T00:00:00Z",
+                "endDate": "2024-01-31T23:59:59Z",
+                "filters": {
+                  "templateId": "1",
+                  "status": ["active", "expired"]
+                }
+              }
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        }
+      }
+    },
+    {
+      "name": "Schedule Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation ScheduleReport($id: ID!, $schedule: ReportScheduleInput!) {\n  scheduleReport(id: $id, schedule: $schedule) {\n    id\n    name\n    schedule\n    nextRun\n  }\n}",
+            "variables": {
+              "id": "report_id",
+              "schedule": {
+                "frequency": "weekly",
+                "day": 1,
+                "hour": 9,
+                "minute": 0
+              }
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        }
+      }
+    },
+    {
+      "name": "Real-time Stats",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query {\n  realTimeStats {\n    activeUsers\n    certificatesIssued\n    recentActivities {\n      id\n      type\n      user {\n        name\n      }\n      timestamp\n    }\n  }\n}"
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://your-domain.com"
+    },
+    {
+      "key": "token",
+      "value": "your_access_token"
+    }
+  ]
+}

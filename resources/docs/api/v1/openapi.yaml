@@ -1,0 +1,233 @@
+openapi: 3.0.0
+info:
+  title: CertificateHub API
+  version: '1.0'
+  description: API for managing certificates and templates
+  contact:
+    name: CertificateHub Support
+    email: support@certificatehub.com
+
+servers:
+  - url: /api/v1
+    description: API Version 1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: token
+
+  schemas:
+    Certificate:
+      type: object
+      properties:
+        id:
+          type: integer
+        template_id:
+          type: integer
+        user_id:
+          type: integer
+        recipient_name:
+          type: string
+        recipient_email:
+          type: string
+        status:
+          type: string
+          enum: [pending, generated, sent, failed]
+        format:
+          type: string
+          enum: [pdf, png, svg]
+        file_path:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        user_id:
+          type: integer
+        is_public:
+          type: boolean
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ApiToken:
+      type: object
+      properties:
+        name:
+          type: string
+        abilities:
+          type: array
+          items:
+            type: string
+        expires_at:
+          type: string
+          format: date-time
+
+paths:
+  /templates:
+    get:
+      summary: List templates
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Template'
+    post:
+      summary: Create template
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - content
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                content:
+                  type: string
+                is_public:
+                  type: boolean
+      responses:
+        '201':
+          description: Template created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+
+  /certificates:
+    get:
+      summary: List certificates
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: template_id
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of certificates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Certificate'
+    post:
+      summary: Generate certificate
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - template_id
+                - recipient_name
+                - recipient_email
+                - format
+              properties:
+                template_id:
+                  type: integer
+                recipient_name:
+                  type: string
+                recipient_email:
+                  type: string
+                format:
+                  type: string
+                  enum: [pdf, png, svg]
+      responses:
+        '201':
+          description: Certificate created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+
+  /tokens:
+    post:
+      summary: Create API token
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                abilities:
+                  type: array
+                  items:
+                    type: string
+                expires_at:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiToken'
